@@ -1,0 +1,34 @@
+server:
+  port: 8081
+  error:
+    include-message: always
+    include-binding-errors: always
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5433/postgres
+    username: user
+    password: telegramDb
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show_sql: true
+    properties:
+      hibernate:
+      format_sql: true
+      database: postgresql
+      database-platform: org.hibernate.dialect.PostgreSQL95Dialect
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: admin
+    password: adminPassword
+
+# noinspection undefined
+telegram:
+  bot:
+    name: UParse_Bot
+    token: 6331302530:AAET0AyPML9sB39yjunR6if_TflqM7mDuzA
+    path: https://528c-5-16-118-81.ngrok-free.app
+    proxyType: SOCKSS
+    proxyHost: localhost
+    proxyPort: 9150
