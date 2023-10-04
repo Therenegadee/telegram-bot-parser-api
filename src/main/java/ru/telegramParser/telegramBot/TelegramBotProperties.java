@@ -14,6 +14,7 @@ public class TelegramBotProperties {
     private String username;
     private String token;
     private String webhookPath;
+    private String pathForMessages;
     private DefaultBotOptions.ProxyType proxyType;
     private String proxyHost;
     private int proxyPort;

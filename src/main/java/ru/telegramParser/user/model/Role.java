@@ -3,6 +3,7 @@ package ru.telegramParser.user.model;
 import jakarta.persistence.*;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import ru.telegramParser.user.model.enums.ERole;
 
@@ -11,7 +12,14 @@ import ru.telegramParser.user.model.enums.ERole;
 @Getter
 @Setter
 @EqualsAndHashCode(exclude = "id")
+@NoArgsConstructor
 public class Role {
+
+    public Role(ERole name) {
+        this.name = name;
+    }
+
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;

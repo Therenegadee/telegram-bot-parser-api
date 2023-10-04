@@ -11,10 +11,16 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import ru.telegramParser.telegramBot.TelegramBotProperties;
 import ru.telegramParser.telegramBot.cache.BotState;
 import ru.telegramParser.telegramBot.cache.BotStateCache;
+import ru.telegramParser.user.model.Role;
 import ru.telegramParser.user.model.User;
+import ru.telegramParser.user.model.enums.AuthState;
+import ru.telegramParser.user.model.enums.ERole;
+import ru.telegramParser.user.model.enums.UserState;
 import ru.telegramParser.user.payloads.SignupRequest;
 import ru.telegramParser.user.repository.UserRepository;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -48,7 +54,7 @@ public class RegisterCommand extends Command {
         return message;
     }
 
-    public String sendRegisterRequest(Long telegramUserId) {
+    public void sendRegisterRequest(Long telegramUserId, String chatId) {
         String registrationEndpoint = "http://localhost:8080/api/auth/signup";
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -71,9 +77,26 @@ public class RegisterCommand extends Command {
         );
 
         if (response.getStatusCode() == HttpStatus.OK) {
-            return "Регистрация прошла успешно!";
+            Set<Role> roles = new HashSet<>();
+            roles.add(new Role(ERole.ROLE_USER));
+            user.setRoles(roles);
+            user.setUserState(UserState.WAIT_FOR_EMAIL_VERIFICATION);
+            user.setAuthState(AuthState.AUTHENTICATED);
+            userRepository.save(user);
+            SendMessage successMessage = new SendMessage();
+            successMessage.setText("Регистрация прошла успешно!");
+            successMessage.setChatId(chatId);
+            ResponseEntity<?> responseEntity =
+                    restTemplate.postForEntity
+                            (
+                            botProperties.getPathForMessages(),
+                                    successMessage,
+                                    SendMessage.class,
+                                    ""
+                            );
         } else {
-            return "Произошла ошибка при регистрации.";
+            log.debug("error while sending register request");
+
         }
     }
 
@@ -143,6 +166,7 @@ public class RegisterCommand extends Command {
             userRepository.save(user);
             message.setText(PASSWORD_SUCCESSFULLY_SAVED);
             botStateCache.setBotState(telegramUserId, BotState.PROCESSING_REGISTER_REQUEST);
+            sendRegisterRequest(telegramUserId, chatId);
             return message;
         }
     }
