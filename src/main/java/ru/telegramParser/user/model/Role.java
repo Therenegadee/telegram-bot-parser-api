@@ -8,7 +8,8 @@ import lombok.Setter;
 import ru.telegramParser.user.model.enums.ERole;
 
 @Entity
-@Table(name = "roles")
+@Table(name = "roles",
+        uniqueConstraints = {@UniqueConstraint(columnNames = "name")})
 @Getter
 @Setter
 @EqualsAndHashCode(exclude = "id")

@@ -11,6 +11,8 @@ import ru.telegramParser.user.repository.UserRepository;
 
 import java.util.Optional;
 
+import static ru.telegramParser.user.model.enums.AuthState.NOT_LOGGED_IN;
+
 @Component
 public class Command {
     @Autowired
@@ -33,7 +35,13 @@ public class Command {
     protected boolean isAuthenticated(Long userID) {
         Optional<User> userOptional =
                 userRepository.findByTelegramUserId(userID);
-        return userOptional.get().getAuthState().equals(AuthState.AUTHENTICATED);
+        AuthState authState = userOptional.get().getAuthState();
+        if (authState == null) {
+            authState = NOT_LOGGED_IN;
+            userOptional.get().setAuthState(NOT_LOGGED_IN);
+            userRepository.save(userOptional.get());
+        }
+        return authState.equals(AuthState.AUTHENTICATED);
     }
 
 }

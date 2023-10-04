@@ -51,4 +51,6 @@ public class Consts {
     public static final String PASSWORD_SUCCESSFULLY_SAVED = "Пароль успешно сохранен!";
     public static final String PROCESSING_REGISTER_REQUEST = "Ваш запрос на регистрацию обрабатывается!\n" +
             "Мы пришлем уведомление, когда запрос будет обработан. Ожидайте, пожалуйста";
+    public static final String BAD_REGISTER_REQUEST = "Произошла ошибка при попытке регистрации!\n" +
+            "Пожалуйста, попробуйте снова: /register";
 }

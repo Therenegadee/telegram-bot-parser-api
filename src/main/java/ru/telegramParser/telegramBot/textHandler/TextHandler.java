@@ -7,8 +7,7 @@ import ru.telegramParser.telegramBot.cache.BotState;
 import ru.telegramParser.telegramBot.cache.BotStateCache;
 import ru.telegramParser.telegramBot.commands.RegisterCommand;
 
-import static ru.telegramParser.telegramBot.utils.Consts.CANT_UNDERSTAND;
-import static ru.telegramParser.telegramBot.utils.Consts.PASSWORD_SUCCESSFULLY_SAVED;
+import static ru.telegramParser.telegramBot.utils.Consts.*;
 
 @Component
 @RequiredArgsConstructor
@@ -29,10 +28,11 @@ public class TextHandler {
                 return registerCommand.processPasswordInput(telegramUserId, chatId, textMessage);
             }
             case PROCESSING_REGISTER_REQUEST -> {
+                registerCommand.sendRegisterRequest(telegramUserId, chatId);
                 return SendMessage
                         .builder()
                         .chatId(chatId)
-                        .text(PASSWORD_SUCCESSFULLY_SAVED)
+                        .text(PROCESSING_REGISTER_REQUEST)
                         .build();
             }
             default -> {

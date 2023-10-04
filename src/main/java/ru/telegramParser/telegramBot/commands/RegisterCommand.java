@@ -17,6 +17,7 @@ import ru.telegramParser.user.model.enums.AuthState;
 import ru.telegramParser.user.model.enums.ERole;
 import ru.telegramParser.user.model.enums.UserState;
 import ru.telegramParser.user.payloads.SignupRequest;
+import ru.telegramParser.user.repository.RoleRepository;
 import ru.telegramParser.user.repository.UserRepository;
 
 import java.util.HashSet;
@@ -35,6 +36,8 @@ public class RegisterCommand extends Command {
     private BotStateCache botStateCache;
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private RoleRepository roleRepository;
 
     @Override
     public SendMessage apply(Update update) {
@@ -55,7 +58,7 @@ public class RegisterCommand extends Command {
     }
 
     public void sendRegisterRequest(Long telegramUserId, String chatId) {
-        String registrationEndpoint = "http://localhost:8080/api/auth/signup";
+        String registrationEndpoint = "http://localhost:8080/api/telegram/auth/signup";
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
 
@@ -77,8 +80,9 @@ public class RegisterCommand extends Command {
         );
 
         if (response.getStatusCode() == HttpStatus.OK) {
+            Role role = roleRepository.findByName(ERole.ROLE_USER).get();
             Set<Role> roles = new HashSet<>();
-            roles.add(new Role(ERole.ROLE_USER));
+            roles.add(role);
             user.setRoles(roles);
             user.setUserState(UserState.WAIT_FOR_EMAIL_VERIFICATION);
             user.setAuthState(AuthState.AUTHENTICATED);
@@ -95,8 +99,20 @@ public class RegisterCommand extends Command {
                                     ""
                             );
         } else {
+            userRepository.delete(user);
+            botStateCache.setBotState(telegramUserId, BotState.BASIC_STATE);
+            SendMessage unsuccessMessage = new SendMessage();
+            unsuccessMessage.setText(BAD_REGISTER_REQUEST);
+            unsuccessMessage.setChatId(chatId);
+            ResponseEntity<?> responseEntity =
+                    restTemplate.postForEntity
+                            (
+                                    botProperties.getPathForMessages(),
+                                    unsuccessMessage,
+                                    SendMessage.class,
+                                    ""
+                            );
             log.debug("error while sending register request");
-
         }
     }
 
@@ -120,6 +136,7 @@ public class RegisterCommand extends Command {
             User user = new User();
             user.setTelegramUserId(telegramUserId);
             user.setUsername(username);
+            user.setAuthState(AuthState.NOT_LOGGED_IN);
             userRepository.save(user);
             message.setText(USERNAME_SUCCESSFULLY_SAVED);
             botStateCache.setBotState(telegramUserId, BotState.WAIT_FOR_REGISTER_EMAIL_INPUT);
