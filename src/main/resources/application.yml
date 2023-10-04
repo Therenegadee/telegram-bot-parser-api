@@ -17,18 +17,10 @@ spring:
       format_sql: true
       database: postgresql
       database-platform: org.hibernate.dialect.PostgreSQL95Dialect
-  rabbitmq:
-    host: localhost
-    port: 5672
-    username: admin
-    password: adminPassword
 
-# noinspection undefined
 telegram:
   bot:
-    name: UParse_Bot
-    token: 6331302530:AAET0AyPML9sB39yjunR6if_TflqM7mDuzA
-    path: https://528c-5-16-118-81.ngrok-free.app
-    proxyType: SOCKSS
-    proxyHost: localhost
-    proxyPort: 9150
+    username: "@UParse_Bot"
+    url: "https://api.telegram.org/"
+    webhook-path: "https://7f43-5-16-118-81.ngrok-free.app/"
+    token: "INSERT YOUR BOT CODE"

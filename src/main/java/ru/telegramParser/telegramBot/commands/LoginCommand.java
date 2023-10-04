@@ -6,7 +6,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
-import ru.telegramParser.telegramBot.TelegramBot;
 import ru.telegramParser.telegramBot.TelegramBotProperties;
 import ru.telegramParser.user.payloads.LoginRequest;
 
@@ -16,10 +15,6 @@ import static ru.telegramParser.telegramBot.utils.Consts.NON_REGISTERED_REQUEST;
 public class LoginCommand extends Command {
     @Autowired
     private TelegramBotProperties botProperties;
-    @Autowired
-    private CommandsHandler commandsHandler;
-    @Autowired
-    private TelegramBot bot;
 
     @Override
     public SendMessage apply(Update update) {
@@ -31,8 +26,9 @@ public class LoginCommand extends Command {
         if(!isRegistered(telegramUserId)) {
             message.setText(NON_REGISTERED_REQUEST);
         } else {
-            String username = getLogin(update, chatId);
-            String password = getPassword(update, chatId);
+            //TODO: change
+            String username = "";
+            String password = "";
             ResponseEntity<?> response = sendLoginRequest(username, password);
             if (response.getStatusCode() == HttpStatus.OK) {
                 String successfulMsg = "Вы успешно прошли авторизацию!";
@@ -43,20 +39,6 @@ public class LoginCommand extends Command {
             }
         }
         return message;
-    }
-
-    private String getLogin(Update update, String chatId){
-        SendMessage message = new SendMessage(chatId, "Введите логин: ");
-        bot.sendMessage(message);
-        String username = update.getMessage().getText();
-        return username;
-    }
-
-    private String getPassword(Update update, String chatId){
-        SendMessage message = new SendMessage(chatId, "Введите пароль: ");
-        bot.sendMessage(message);
-        String password = update.getMessage().getText();
-        return password;
     }
 
     private ResponseEntity<?> sendLoginRequest(String username, String password) {

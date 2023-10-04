@@ -1,42 +1,46 @@
 package ru.telegramParser.telegramBot;
 
-import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import lombok.extern.log4j.Log4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-import org.telegram.telegrambots.bots.DefaultBotOptions;
-import org.telegram.telegrambots.bots.TelegramWebhookBot;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.updates.SetWebhook;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+import org.telegram.telegrambots.starter.SpringWebhookBot;
 import ru.telegramParser.telegramBot.commands.CommandsHandler;
+import ru.telegramParser.telegramBot.textHandler.TextHandler;
 import ru.telegramParser.telegramBot.utils.Consts;
 
-@Component(value = "telegramBot")
-@RequiredArgsConstructor
 @Log4j
-public class TelegramBot extends TelegramWebhookBot {
+@Setter
+public class TelegramBot extends SpringWebhookBot {
     @Autowired
     private TelegramBotProperties botProperties;
     @Autowired
     private CommandsHandler commandsHandler;
+    @Autowired
+    private TextHandler textHandler;
+    private String botPath;
+    private String botUsername;
+    private String botToken;
 
-    public TelegramBot(DefaultBotOptions botOptions) {
-        super(botOptions);
+    public TelegramBot(SetWebhook setWebhook) {
+        super(setWebhook);
     }
 
     @Override
     public BotApiMethod<?> onWebhookUpdateReceived(Update update) {
         String chatId = update.getMessage().getChatId().toString();
-        if (update.hasMessage() && update.getMessage().hasText()) {
-            if (update.getMessage().getText().startsWith("/")) {
-                var sendMessage = commandsHandler.handleCommands(update);
-                return sendMessage;
-            } else {
-                return new SendMessage(chatId, Consts.CANT_UNDERSTAND);
-            }
-        } return new SendMessage(chatId, Consts.CANT_UNDERSTAND);
+        Long telegramUserId = update.getMessage().getFrom().getId();
+        String textMessage = update.getMessage().getText();
+        if (update.hasMessage() && textMessage.startsWith("/")) {
+            return commandsHandler.handleCommands(update);
+        } else if (update.hasMessage()){
+            return textHandler.handleTextMessage(telegramUserId, chatId, textMessage);
+        }
+        return new SendMessage(chatId, Consts.CANT_UNDERSTAND);
     }
 
     public void sendMessage(SendMessage sendMessage) {
@@ -49,7 +53,7 @@ public class TelegramBot extends TelegramWebhookBot {
 
     @Override
     public String getBotUsername() {
-        return botProperties.getName();
+        return botProperties.getUsername();
     }
 
     @Override
@@ -59,6 +63,6 @@ public class TelegramBot extends TelegramWebhookBot {
 
     @Override
     public String getBotPath() {
-        return botProperties.getPath();
+        return botProperties.getWebhookPath();
     }
 }

@@ -12,7 +12,8 @@ import java.util.Map;
 @Component
 @Log4j
 public class CommandsHandler {
-    public final Map<String, Command> commands;
+    private final Map<String, Command> commands;
+
 
     public CommandsHandler(
             StartCommand startCommand,
@@ -44,6 +45,5 @@ public class CommandsHandler {
             return new SendMessage(chatId, Consts.UNKNOWN_COMMAND);
         }
     }
-
-
 }
+

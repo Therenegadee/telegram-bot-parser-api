@@ -43,6 +43,7 @@ public class User {
 
     @Enumerated(EnumType.STRING)
     private UserState userState;
+
     @Enumerated(EnumType.STRING)
     private AuthState authState;
 

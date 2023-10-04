@@ -11,9 +11,9 @@ import org.telegram.telegrambots.bots.DefaultBotOptions;
 @Data
 @PropertySource("classpath:application.yml")
 public class TelegramBotProperties {
-    private String name;
+    private String username;
     private String token;
-    private String path;
+    private String webhookPath;
     private DefaultBotOptions.ProxyType proxyType;
     private String proxyHost;
     private int proxyPort;
