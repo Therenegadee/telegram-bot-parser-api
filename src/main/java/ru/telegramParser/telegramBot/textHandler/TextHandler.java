@@ -3,8 +3,9 @@ package ru.telegramParser.telegramBot.textHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import ru.telegramParser.telegramBot.cache.BotState;
-import ru.telegramParser.telegramBot.cache.BotStateCache;
+import ru.telegramParser.telegramBot.cache.enums.BotState;
+import ru.telegramParser.telegramBot.cache.enums.CommandExecutionState;
+import ru.telegramParser.telegramBot.cache.BotCache;
 import ru.telegramParser.telegramBot.commands.RegisterCommand;
 
 import static ru.telegramParser.telegramBot.utils.Consts.*;
@@ -12,31 +13,36 @@ import static ru.telegramParser.telegramBot.utils.Consts.*;
 @Component
 @RequiredArgsConstructor
 public class TextHandler {
-    private final BotStateCache botStateCache;
+    private final BotCache botCache;
     private final RegisterCommand registerCommand;
 
     public SendMessage handleTextMessage(Long telegramUserId, String chatId, String textMessage) {
-        BotState botState = botStateCache.getBotState(telegramUserId);
-        switch (botState) {
-            case WAIT_FOR_REGISTER_USERNAME_INPUT -> {
-                return registerCommand.processUsernameRegisterInput(telegramUserId, chatId, textMessage);
-            }
-            case WAIT_FOR_REGISTER_EMAIL_INPUT -> {
-                return registerCommand.processEmailInput(telegramUserId, chatId, textMessage);
-            }
-            case WAIT_FOR_REGISTER_PASSWORD_INPUT -> {
-                return registerCommand.processPasswordInput(telegramUserId, chatId, textMessage);
-            }
-            case PROCESSING_REGISTER_REQUEST -> {
-                registerCommand.sendRegisterRequest(telegramUserId, chatId);
-                return SendMessage
-                        .builder()
-                        .chatId(chatId)
-                        .text(PROCESSING_REGISTER_REQUEST)
-                        .build();
-            }
-            default -> {
-                return new SendMessage(chatId, CANT_UNDERSTAND);
+        CommandExecutionState commandExecutionState = botCache.getCommandState(telegramUserId);
+        BotState botState = botCache.getBotState(telegramUserId);
+        if (botState.equals(BotState.PROCESSING_REQUEST)) {
+            return new SendMessage(chatId, PROCESSING_REQUEST_NOW);
+        } else {
+            switch (commandExecutionState) {
+                case WAIT_FOR_REGISTER_USERNAME_INPUT -> {
+                    return registerCommand.processUsernameRegisterInput(telegramUserId, chatId, textMessage);
+                }
+                case WAIT_FOR_REGISTER_EMAIL_INPUT -> {
+                    return registerCommand.processEmailInput(telegramUserId, chatId, textMessage);
+                }
+                case WAIT_FOR_REGISTER_PASSWORD_INPUT -> {
+                    return registerCommand.processPasswordInput(telegramUserId, chatId, textMessage);
+                }
+                case PROCESSING_REGISTER_REQUEST -> {
+                    registerCommand.sendRegisterRequest(telegramUserId, chatId);
+                    return SendMessage
+                            .builder()
+                            .chatId(chatId)
+                            .text(PROCESSING_REGISTER_REQUEST)
+                            .build();
+                }
+                default -> {
+                    return new SendMessage(chatId, CANT_UNDERSTAND);
+                }
             }
         }
     }

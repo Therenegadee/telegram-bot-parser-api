@@ -9,6 +9,7 @@ import org.telegram.telegrambots.meta.api.methods.updates.SetWebhook;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.starter.SpringWebhookBot;
+import ru.telegramParser.telegramBot.cache.BotCache;
 import ru.telegramParser.telegramBot.commands.CommandsHandler;
 import ru.telegramParser.telegramBot.textHandler.TextHandler;
 import ru.telegramParser.telegramBot.utils.Consts;
@@ -22,6 +23,9 @@ public class TelegramBot extends SpringWebhookBot {
     private CommandsHandler commandsHandler;
     @Autowired
     private TextHandler textHandler;
+    @Autowired
+    private BotCache botCache;
+
     private String botPath;
     private String botUsername;
     private String botToken;
@@ -39,8 +43,9 @@ public class TelegramBot extends SpringWebhookBot {
             return commandsHandler.handleCommands(update);
         } else if (update.hasMessage()){
             return textHandler.handleTextMessage(telegramUserId, chatId, textMessage);
+        } else {
+            return new SendMessage(chatId, Consts.CANT_UNDERSTAND);
         }
-        return new SendMessage(chatId, Consts.CANT_UNDERSTAND);
     }
 
     public void sendMessage(SendMessage sendMessage) {

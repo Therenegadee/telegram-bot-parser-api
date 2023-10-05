@@ -1,22 +1,29 @@
 package ru.telegramParser.telegramBot.commands;
 
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import ru.telegramParser.telegramBot.TelegramBotProperties;
 import ru.telegramParser.user.model.User;
 import ru.telegramParser.user.model.enums.AuthState;
 import ru.telegramParser.user.repository.UserRepository;
 
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static ru.telegramParser.user.model.enums.AuthState.NOT_LOGGED_IN;
 
 @Component
 public class Command {
     @Autowired
-    private UserRepository userRepository;
+    protected UserRepository userRepository;
+    @Autowired
+    protected RestTemplate restTemplate;
+    @Autowired
+    protected TelegramBotProperties botProperties;
 
     protected SendMessage apply(Update update){
         String chatId = update.getMessage().getChatId().toString();
@@ -42,6 +49,16 @@ public class Command {
             userRepository.save(userOptional.get());
         }
         return authState.equals(AuthState.AUTHENTICATED);
+    }
+
+    protected void sendTelegramMessage(SendMessage sendMessage) {
+        restTemplate.postForEntity
+                (
+                        botProperties.getPathForMessages(),
+                        sendMessage,
+                        SendMessage.class,
+                        ""
+                );
     }
 
 }

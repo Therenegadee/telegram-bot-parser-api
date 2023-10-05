@@ -2,6 +2,8 @@ package ru.telegramParser.telegramBot.utils;
 
 public class Consts {
 
+    public static final String PROCESSING_REQUEST_NOW = "Подождите! Я обрабатываю Вашу предыдущую команду!";
+
     // CHECKING AUTHENTICATION COMMANDS
     public static final String NON_REGISTERED_REQUEST = "Для начала работы с парсером необходимо зарегистрироваться или войти в аккаунт!\n" +
             "Введите /register или /login";
@@ -27,16 +29,14 @@ public class Consts {
             "Если это Ваш аккаунт, то, пожалуйста, войдите в него, используя команду /login";
     public static final String USERNAME_IS_TOO_LONG = "Введенное имя пользователя слишком длинное!\n" +
             "Введите новое, не превышающее 20 символов!";
-    public static final String USERNAME_SUCCESSFULLY_SAVED = "Имя пользователя успешно сохранено!\n" +
-            "Введите Ваш Email:";
+    public static final String USERNAME_SUCCESSFULLY_SAVED = "Имя пользователя успешно сохранено!";
     public static final String EMAIL_ISNT_VALID = "Данный Email не валиден!\n" +
             "Введите корректный Email!";
     public static final String EMAIL_IS_ALREADY_USED = "Данный email уже используется!\n" +
             "Введите другой или войдите в аккаунт, используя имя пользователя и пароль, с помощью команды /login";
     public static final String EMAIL_IS_TOO_LONG = "Длина Email не должна превышать 35 символов!\n" +
             "Введите корректный Email!";
-    public static final String EMAIL_SUCCESSFULLY_SAVED = "Email успешно сохранен!\n" +
-            "Введите Ваш пароль:";
+    public static final String EMAIL_SUCCESSFULLY_SAVED = "Email успешно сохранен!";
     public static final String PASSWORD_IS_EMPTY = "Пароль не может быть пустым или состоять из пробелов!\n" +
             "Введите корректный пароль!";
     public static final String PASSWORD_IS_NOT_VALID = """

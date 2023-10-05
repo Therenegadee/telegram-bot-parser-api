@@ -1,7 +1,7 @@
-package ru.telegramParser.telegramBot.cache;
+package ru.telegramParser.telegramBot.cache.enums;
 
-public enum BotState {
-    BASIC_STATE,
+public enum CommandExecutionState {
+    WAITING_FOR_COMMAND,
     // REGISTER STATES
     WAIT_FOR_REGISTER_USERNAME_INPUT,
     WAIT_FOR_REGISTER_EMAIL_INPUT,
