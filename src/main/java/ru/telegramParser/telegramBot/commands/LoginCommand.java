@@ -38,8 +38,8 @@ public class LoginCommand extends Command {
 
         Long telegramUserId = update.getMessage().getFrom().getId();
         if (!isRegistered(telegramUserId)) {
-            message.setText(NON_REGISTERED_REQUEST);
-            return message;
+            sendTelegramMessage(new SendMessage(chatId, NON_REGISTERED_OR_LINKED_ACCOUNT));
+            message.setText(REGISTER_OR_LINK_YOUR_ACCOUNT);
         } else {
             if (isAuthenticated(telegramUserId)) {
                 message.setText(ALREADY_LOGGED_IN_REQUEST);
@@ -47,8 +47,8 @@ public class LoginCommand extends Command {
             }
             botCache.setCommandState(telegramUserId, CommandExecutionState.WAITING_FOR_COMMAND);
             botCache.setBotState(telegramUserId, BotState.BASIC_STATE);
-            return message;
         }
+        return message;
     }
 
     private SendMessage sendLoginRequest(Long telegramUserId, String chatId, User user, String password) {

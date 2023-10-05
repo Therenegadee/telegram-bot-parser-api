@@ -5,6 +5,9 @@ public class Consts {
     public static final String PROCESSING_REQUEST_NOW = "Подождите! Я обрабатываю Вашу предыдущую команду!";
 
     // CHECKING AUTHENTICATION COMMANDS
+    public static final String NON_REGISTERED_OR_LINKED_ACCOUNT = "Ваш Telegram ID не зарегистрирован или не привзяан ни к одному аккаунту";
+    public static final String REGISTER_OR_LINK_YOUR_ACCOUNT = "Зарегистрируйте в нашей системе с помощью /register\n" +
+            "Или привяжите Ваш Telegram ID к существующему аккаунту через наш веб-сайт :)";
     public static final String NON_REGISTERED_REQUEST = "Для начала работы с парсером необходимо зарегистрироваться или войти в аккаунт!\n" +
             "Введите /register или /login";
     public static final String NON_LOGGED_IN_REQUEST = "Для начала работы с парсером необходимо зарегистрироваться или войти в аккаунт!\n" +
