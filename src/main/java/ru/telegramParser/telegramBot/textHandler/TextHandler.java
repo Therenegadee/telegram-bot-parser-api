@@ -30,15 +30,7 @@ public class TextHandler {
                     return registerCommand.processEmailInput(telegramUserId, chatId, textMessage);
                 }
                 case WAIT_FOR_REGISTER_PASSWORD_INPUT -> {
-                    return registerCommand.processPasswordInput(telegramUserId, chatId, textMessage);
-                }
-                case PROCESSING_REGISTER_REQUEST -> {
-                    registerCommand.sendRegisterRequest(telegramUserId, chatId);
-                    return SendMessage
-                            .builder()
-                            .chatId(chatId)
-                            .text(PROCESSING_REGISTER_REQUEST)
-                            .build();
+                    return registerCommand.processPasswordRegisterInput(telegramUserId, chatId, textMessage);
                 }
                 default -> {
                     return new SendMessage(chatId, CANT_UNDERSTAND);

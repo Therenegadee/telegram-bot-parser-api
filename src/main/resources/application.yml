@@ -23,6 +23,6 @@ telegram:
   bot:
     username: "@DataHarvest_Bot"
     url: "https://api.telegram.org/"
-    webhook-path: "https://d40e-5-16-118-81.ngrok-free.app"
-    path-for-messages: "https://7f43-5-16-118-81.ngrok-free.app/send"
+    webhook-path: "https://192f-5-16-118-81.ngrok-free.app"
+    path-for-messages: "https://192f-5-16-118-81.ngrok-free.app/send"
     token: "6092572923:AAFJaAXaR_K5h_fkqGr6TSNPmSFBjBrciBg"

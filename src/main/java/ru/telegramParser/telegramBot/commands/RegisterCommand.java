@@ -11,6 +11,7 @@ import ru.telegramParser.telegramBot.TelegramBotProperties;
 import ru.telegramParser.telegramBot.cache.enums.BotState;
 import ru.telegramParser.telegramBot.cache.enums.CommandExecutionState;
 import ru.telegramParser.telegramBot.cache.BotCache;
+import ru.telegramParser.telegramBot.utils.PasswordEncoder;
 import ru.telegramParser.user.model.Role;
 import ru.telegramParser.user.model.User;
 import ru.telegramParser.user.model.enums.AuthState;
@@ -35,6 +36,8 @@ public class RegisterCommand extends Command {
     private BotCache botCache;
     @Autowired
     private RoleRepository roleRepository;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
     private static final String REGISTRATION_ENDPOINT = "http://localhost:8080/api/telegram/auth/signup";
 
     @Override
@@ -55,16 +58,18 @@ public class RegisterCommand extends Command {
         return message;
     }
 
-    public void sendRegisterRequest(Long telegramUserId, String chatId) {
+    public SendMessage sendRegisterRequest(Long telegramUserId, String chatId, String notEncryptPassword) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
+        SendMessage message = new SendMessage();
+        message.setChatId(chatId);
 
         User user = userRepository.findByTelegramUserId(telegramUserId).get();
 
         SignupRequest signUpRequest = new SignupRequest();
         signUpRequest.setUsername(user.getUsername());
         signUpRequest.setEmail(user.getEmail());
-        signUpRequest.setPassword(user.getPassword());
+        signUpRequest.setPassword(notEncryptPassword);
 
         HttpEntity<SignupRequest> request = new HttpEntity<>(signUpRequest, headers);
 
@@ -75,7 +80,7 @@ public class RegisterCommand extends Command {
                 String.class
         );
 
-        if (response.getStatusCode() == HttpStatus.OK) {
+        if (response.getStatusCode().equals(HttpStatus.OK)) {
             Role role = roleRepository.findByName(ERole.ROLE_USER).get();
             Set<Role> roles = new HashSet<>();
             roles.add(role);
@@ -83,19 +88,15 @@ public class RegisterCommand extends Command {
             user.setUserState(UserState.WAIT_FOR_EMAIL_VERIFICATION);
             user.setAuthState(AuthState.AUTHENTICATED);
             userRepository.save(user);
-            SendMessage successMessage = new SendMessage();
-            successMessage.setText("Регистрация прошла успешно!");
-            successMessage.setChatId(chatId);
-            sendTelegramMessage(successMessage);
+            message.setText(SUCCESSFUL_REGISTRATION);
         } else {
             userRepository.delete(user);
-            SendMessage unsuccessMessage = new SendMessage();
-            unsuccessMessage.setText(BAD_REGISTER_REQUEST);
-            unsuccessMessage.setChatId(chatId);
-            sendTelegramMessage(unsuccessMessage);
+            message.setText(BAD_REGISTER_REQUEST);
             log.debug("error while sending register request");
         }
+        botCache.setCommandState(telegramUserId, CommandExecutionState.WAITING_FOR_COMMAND);
         botCache.setBotState(telegramUserId, BotState.BASIC_STATE);
+        return message;
     }
 
     public SendMessage processUsernameRegisterInput(Long telegramUserId, String chatId, String textMessage) {
@@ -121,10 +122,11 @@ public class RegisterCommand extends Command {
             user.setAuthState(AuthState.NOT_LOGGED_IN);
             userRepository.save(user);
             message.setText(USERNAME_SUCCESSFULLY_SAVED);
-            SendMessage inputEmail = new SendMessage(chatId, "Введите Ваш Email");
-            sendTelegramMessage(inputEmail);
+            sendTelegramMessage(message);
+
+            SendMessage inputEmail = new SendMessage(chatId, INPUT_EMAIL);
             botCache.setCommandState(telegramUserId, CommandExecutionState.WAIT_FOR_REGISTER_EMAIL_INPUT);
-            return message;
+            return inputEmail;
         }
     }
 
@@ -146,14 +148,15 @@ public class RegisterCommand extends Command {
             user.setEmail(email);
             userRepository.save(user);
             message.setText(EMAIL_SUCCESSFULLY_SAVED);
-            SendMessage inputPassword = new SendMessage(chatId, "Введите Ваш пароль");
-            sendTelegramMessage(inputPassword);
+            sendTelegramMessage(message);
+
+            SendMessage inputPassword = new SendMessage(chatId, INPUT_PASSWORD);
             botCache.setCommandState(telegramUserId, CommandExecutionState.WAIT_FOR_REGISTER_PASSWORD_INPUT);
-            return message;
+            return inputPassword;
         }
     }
 
-    public SendMessage processPasswordInput(Long telegramUserId, String chatId, String textMessage) {
+    public SendMessage processPasswordRegisterInput(Long telegramUserId, String chatId, String textMessage) {
         SendMessage message = new SendMessage();
         message.setChatId(chatId);
         String password = textMessage;
@@ -165,12 +168,11 @@ public class RegisterCommand extends Command {
             return message;
         } else {
             User user = userRepository.findByTelegramUserId(telegramUserId).get();
-            user.setPassword(password);
+            user.setPassword(passwordEncoder.encode(password));
             userRepository.save(user);
             message.setText(PASSWORD_SUCCESSFULLY_SAVED);
             botCache.setCommandState(telegramUserId, CommandExecutionState.PROCESSING_REGISTER_REQUEST);
-            sendRegisterRequest(telegramUserId, chatId);
-            return message;
+            return sendRegisterRequest(telegramUserId, chatId, password);
         }
     }
     private boolean isValidPassword(String password) {

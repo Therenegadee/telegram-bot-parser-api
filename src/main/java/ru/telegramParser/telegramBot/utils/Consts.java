@@ -20,9 +20,11 @@ public class Consts {
     public static final String CANT_UNDERSTAND = "Извините, но я понимаю только команды :(\n" +
             "Чтобы узнать список доступных комманд введите /help";
 
+    // AUTH MESSAGES
+    public static final String INPUT_USERNAME = "Введите имя пользователя";
+    public static final String INPUT_PASSWORD = "Введите пароль";
+    public static final String INPUT_EMAIL= "Введите Email";
     // REGISTER MESSAGES
-
-    public static final String INPUT_USERNAME = "Введите имя пользователя: ";
     public static final String CONTAINS_CYRILLIC_SYMBOLS = "Логин не может содержать символы кириллицы!\n" +
             "Пожалуйста, повторите ввод логина.";
     public static final String USERNAME_IS_ALREADY_USED = "Имя пользователя уже используется!\n" +
@@ -51,6 +53,16 @@ public class Consts {
     public static final String PASSWORD_SUCCESSFULLY_SAVED = "Пароль успешно сохранен!";
     public static final String PROCESSING_REGISTER_REQUEST = "Ваш запрос на регистрацию обрабатывается!\n" +
             "Мы пришлем уведомление, когда запрос будет обработан. Ожидайте, пожалуйста";
+    public static final String SUCCESSFUL_REGISTRATION = "Регистрация прошла успешно!";
     public static final String BAD_REGISTER_REQUEST = "Произошла ошибка при попытке регистрации!\n" +
             "Пожалуйста, попробуйте снова: /register";
+
+    // LOGIN MESSAGES
+    public static final String USER_DONT_EXISTS = "Пользователя с таким именем пользователя не существует!";
+    public static final String INCORRECT_PASSWORD = "Введенный Вами пароль не корректен!";
+    public static final String PROCESSING_LOGIN_REQUEST = "Ваш запрос на авторизацию обрабатывается!\n" +
+            "Мы пришлем уведомление, когда запрос будет обработан. Ожидайте, пожалуйста";
+    public static final String SUCCESSFUL_LOGIN = "Авторизация прошла успешно!";
+    public static final String BAD_LOGIN_REQUEST = "Произошла ошибка при попытке авторизации!\n" +
+            "Пожалуйста, попробуйте снова: /login";
 }
