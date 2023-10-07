@@ -1,16 +1,19 @@
 package ru.telegramParser.telegramBot.commands;
 
+import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j;
 import org.apache.commons.validator.routines.EmailValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import ru.telegramParser.telegramBot.TelegramBotProperties;
 import ru.telegramParser.telegramBot.cache.enums.BotState;
 import ru.telegramParser.telegramBot.cache.enums.CommandExecutionState;
 import ru.telegramParser.telegramBot.cache.BotCache;
+import ru.telegramParser.telegramBot.service.TelegramService;
 import ru.telegramParser.telegramBot.utils.PasswordEncoder;
 import ru.telegramParser.user.model.Role;
 import ru.telegramParser.user.model.User;
@@ -19,6 +22,7 @@ import ru.telegramParser.user.model.enums.ERole;
 import ru.telegramParser.user.model.enums.UserState;
 import ru.telegramParser.user.payloads.SignupRequest;
 import ru.telegramParser.user.repository.RoleRepository;
+import ru.telegramParser.user.repository.UserRepository;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -28,16 +32,15 @@ import java.util.regex.Pattern;
 import static ru.telegramParser.telegramBot.utils.Consts.*;
 
 @Component
+@AllArgsConstructor
 @Log4j
-public class RegisterCommand extends Command {
-    @Autowired
-    private TelegramBotProperties botProperties;
-    @Autowired
-    private BotCache botCache;
-    @Autowired
-    private RoleRepository roleRepository;
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+public class RegisterCommand implements Command {
+    private final BotCache botCache;
+    private final RoleRepository roleRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final UserRepository userRepository;
+    private final TelegramService telegramService;
+    private final RestTemplate restTemplate;
     private static final String REGISTRATION_ENDPOINT = "http://localhost:8080/api/telegram/auth/signup";
 
     @Override
@@ -46,12 +49,12 @@ public class RegisterCommand extends Command {
         SendMessage message = new SendMessage();
         message.setChatId(chatId);
         Long telegramUserId = update.getMessage().getFrom().getId();
-        if (isRegistered(telegramUserId)) {
-            if (isAuthenticated(telegramUserId)) {
+        if (telegramService.isRegistered(telegramUserId)) {
+            if (telegramService.isAuthenticated(telegramUserId)) {
                 message.setText(ALREADY_LOGGED_IN_REQUEST);
             } else
                 message.setText(ALREADY_REGISTERED_REQUEST);
-        } else if (!isRegistered(telegramUserId)) {
+        } else if (!telegramService.isRegistered(telegramUserId)) {
             message.setText(INPUT_USERNAME);
             botCache.setCommandState(telegramUserId, CommandExecutionState.WAIT_FOR_REGISTER_USERNAME_INPUT);
         }
@@ -80,7 +83,7 @@ public class RegisterCommand extends Command {
                 String.class
         );
 
-        if (response.getStatusCode().equals(HttpStatus.OK)) {
+        if (response.getStatusCode().equals(HttpStatus.CREATED)) {
             Role role = roleRepository.findByName(ERole.ROLE_USER).get();
             Set<Role> roles = new HashSet<>();
             roles.add(role);
@@ -122,7 +125,7 @@ public class RegisterCommand extends Command {
             user.setAuthState(AuthState.NOT_LOGGED_IN);
             userRepository.save(user);
             message.setText(USERNAME_SUCCESSFULLY_SAVED);
-            sendTelegramMessage(message);
+            telegramService.sendTelegramMessage(message);
 
             SendMessage inputEmail = new SendMessage(chatId, INPUT_EMAIL);
             botCache.setCommandState(telegramUserId, CommandExecutionState.WAIT_FOR_REGISTER_EMAIL_INPUT);
@@ -148,7 +151,7 @@ public class RegisterCommand extends Command {
             user.setEmail(email);
             userRepository.save(user);
             message.setText(EMAIL_SUCCESSFULLY_SAVED);
-            sendTelegramMessage(message);
+            telegramService.sendTelegramMessage(message);
 
             SendMessage inputPassword = new SendMessage(chatId, INPUT_PASSWORD);
             botCache.setCommandState(telegramUserId, CommandExecutionState.WAIT_FOR_REGISTER_PASSWORD_INPUT);

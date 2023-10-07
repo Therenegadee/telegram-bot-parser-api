@@ -5,7 +5,7 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
 @Component
-public class HelpCommand extends Command{
+public class HelpCommand implements Command{
 
     private static final String HELP_WINDOW = """
             Список доступных команд:

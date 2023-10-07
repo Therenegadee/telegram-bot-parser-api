@@ -5,7 +5,7 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
 @Component
-public class StartCommand extends Command{
+public class StartCommand implements Command{
     private final String HELLO_WINDOW =
             """
             Приветствую!

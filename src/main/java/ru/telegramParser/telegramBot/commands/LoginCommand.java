@@ -1,32 +1,33 @@
 package ru.telegramParser.telegramBot.commands;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import ru.telegramParser.telegramBot.TelegramBotProperties;
 import ru.telegramParser.telegramBot.cache.BotCache;
 import ru.telegramParser.telegramBot.cache.enums.BotState;
 import ru.telegramParser.telegramBot.cache.enums.CommandExecutionState;
+import ru.telegramParser.telegramBot.service.TelegramService;
 import ru.telegramParser.telegramBot.utils.PasswordEncoder;
 import ru.telegramParser.user.model.User;
 import ru.telegramParser.user.model.enums.AuthState;
 import ru.telegramParser.user.model.enums.UserState;
 import ru.telegramParser.user.payloads.LoginRequest;
-
-import java.net.http.HttpResponse;
+import ru.telegramParser.user.repository.UserRepository;
 
 import static ru.telegramParser.telegramBot.utils.Consts.*;
 
 @Component
-public class LoginCommand extends Command {
-    @Autowired
-    private TelegramBotProperties botProperties;
-    @Autowired
-    private BotCache botCache;
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+@AllArgsConstructor
+public class LoginCommand implements Command {
+    private final BotCache botCache;
+    private final PasswordEncoder passwordEncoder;
+    private final UserRepository userRepository;
+    private final TelegramService telegramService;
+    private final RestTemplate restTemplate;
 
     private static final String LOGIN_ENDPOINT = "http://localhost:8080/api/auth/signin";
 
@@ -37,11 +38,11 @@ public class LoginCommand extends Command {
         message.setChatId(chatId);
 
         Long telegramUserId = update.getMessage().getFrom().getId();
-        if (!isRegistered(telegramUserId)) {
-            sendTelegramMessage(new SendMessage(chatId, NON_REGISTERED_OR_LINKED_ACCOUNT));
+        if (!telegramService.isRegistered(telegramUserId)) {
+            telegramService.sendTelegramMessage(new SendMessage(chatId, NON_REGISTERED_OR_LINKED_ACCOUNT));
             message.setText(REGISTER_OR_LINK_YOUR_ACCOUNT);
         } else {
-            if (isAuthenticated(telegramUserId)) {
+            if (telegramService.isAuthenticated(telegramUserId)) {
                 message.setText(ALREADY_LOGGED_IN_REQUEST);
                 return message;
             }
@@ -89,7 +90,7 @@ public class LoginCommand extends Command {
         String username = textMessage;
         if (!userRepository.existsByUsername(username)) {
             message.setText("Зарегистрируйтесь или введите корректные данные!");
-            sendTelegramMessage(new SendMessage(chatId, USER_DONT_EXISTS));
+            telegramService.sendTelegramMessage(new SendMessage(chatId, USER_DONT_EXISTS));
             return message;
         } else {
             message.setText(INPUT_PASSWORD);

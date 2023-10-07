@@ -5,7 +5,7 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
 @Component
-public class StartParseCommand extends Command{
+public class StartParseCommand implements Command{
 
     @Override
     public SendMessage apply(Update update) {
